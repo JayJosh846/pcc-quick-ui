@@ -1,76 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head></head>
+  <body>
 
-<head>
-    <title>Facebook Login</title>
-</head>
+    <h2>Add Facebook Login to your webpage</h2>
 
-<body>
-    <!-- Include the Facebook SDK -->
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+      <!-- Set the element id for the JSON response -->
+    
+      <p id="profile"></p>
 
-    <!-- Facebook login button -->
-    <div class="fb-login-button" data-width="" data-size="large" data-button-type="continue_with" data-layout="default"
-        data-auto-logout-link="false" data-use-continue-as="false"></div>
+      <script>
+  
+        <!-- Add the Facebook SDK for Javascript -->
+  
+        (function(d, s, id){
+                              var js, fjs = d.getElementsByTagName(s)[0];
+                              if (d.getElementById(id)) {return;}
+                              js = d.createElement(s); js.id = id;
+                              js.src = "https://connect.facebook.net/en_US/sdk.js";
+                              fjs.parentNode.insertBefore(js, fjs);
+                            }(document, 'script', 'facebook-jssdk')
+        );
 
-    <script>
-        // Initialize the Facebook SDK
+
         window.fbAsyncInit = function() {
             FB.init({
-                appId: '7773695202718813', // Replace with your Facebook app ID
-                cookie: true,
-                xfbml: true,
-                version: 'v13.0'
-            });
+                      appId            : '7773695202718813',
+                      xfbml            : true,
+                      version: 'v13.0'
+                    });
+            FB.login(function(response) {
+                      if (response.authResponse) {
+                           console.log('Welcome!  Fetching your information.... ');
+                           FB.api('/me', {fields: 'name, email'}, function(response) {
+                            console.log('response ', response);
 
-            FB.AppEvents.logPageView();
+                               document.getElementById("profile").innerHTML = "Good to see you, " + response.name + ". i see your email address is " + response.email
+                           });
+                      } else { 
+                           console.log('User cancelled login or did not fully authorize.'); }
+            });
         };
 
-        // This function is called when someone finishes with the Login Button.
-        function checkLoginState() {
-            FB.getLoginStatus(function(response) {
-                statusChangeCallback(response);
-            });
-        }
+      </script>
 
-        // This function is called when the login status changes.
-        function statusChangeCallback(response) {
-            // if (response.status === 'connected') {
-                // Logged into your webpage and Facebook.
-                testAPI();
-            // } else {
-            //     console.log('Please log into this webpage.');
-            // }
-        }
-
-        // Here we run a very simple test of the Graph API after login is successful.
-        function testAPI() {
-            console.log('Welcome!  Fetching your information.... ');
-            FB.api('/me?fields=name,email', function(response) {
-                console.log('Successful login for: ' + response.name);
-                console.log('Facebook JWT:', response);
-                document.getElementById('jwt-display').innerText = `Facebook JWT: ${response}`;
-
-                // Send the JWT to your backend
-                fetch('/api/callback', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ token: response.accessToken }),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Response from server:', data);
-                    // Handle the response from the backend (optional)
-                })
-                .catch(error => console.error('Error:', error));
-            });
-        }
-    </script>
-
-    <div id="jwt-display"></div>
-</body>
-
+  </body>
 </html>
